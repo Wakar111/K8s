@@ -1,0 +1,53 @@
+# DEPLOYMENT OF MONGO-EXPRESS
+apiVersion: apps/v1
+kind: Deployment                        # what kind of configuration
+metadata:
+  name: mongo-express                # 1) metadata name of the deployment
+  labels:
+    app: mongo-express
+spec:                                   # 2) specification for deployment
+  replicas: 1
+  selector:
+    matchLabels:                        # selctor will connect all together with this key, value name
+      app: mongo-express
+  template:                             # template has its own metadata and spec section
+    metadata:                           # and it all apply to a Pod
+      labels:
+        app: mongo-express                      # specify a label in form of key, value pair
+    spec:                               # 2) specification or blueprint for pod (containers)
+      containers:
+      - name: mongo-express
+        image: mongo-express                    # Docker hub image
+        ports:
+        - containerPort: 8081
+        env:
+          - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+            valueFrom:                                               
+              secretKeyRef:                        # Reference from secret file
+                name: mongodb-secret
+                key: mongo-root-username             
+          - name: ME_CONFIG_MONGODB_ADMINPASSWORD                
+            valueFrom:                                                
+              secretKeyRef:                         # Reference from secret file     
+                name: mongodb-secret
+                key: mongo-root-password
+          - name: ME_CONFIG_MONGODB_SERVER                
+            valueFrom:                                                
+              configMapKeyRef:                        # Reference from configMap file
+                name: mongodb-configmap       
+                key: database_url 
+---
+# Service OF MONGO-EXPRESS
+apiVersion: v1
+kind: Service                        # what kind of configuration
+metadata:
+  name: mongo-express-service                
+spec:                                   
+  selector:
+      app: mongo-express                   # this schould be the same like label from deployment and pod
+  type: LoadBalancer                      # create external Service, it except external requests
+  ports:                            
+    - protocol: TCP  
+      port: 8081
+      targetPort: 8081              # this port should match with the port of deployment
+      nodePort: 30000               # range 30000 - 32767, with this port number i can interact from the outside

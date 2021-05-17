@@ -1,0 +1,44 @@
+# DEPLOYMENT OF POSTGRES-DB
+apiVersion: apps/v1
+kind: Deployment                        # what kind of configuration
+metadata:
+  name: postgresdb-deployment                # 1) metadata name of the deployment
+  labels:
+    app: postgresdb
+spec:                                   # 2) specification for deployment
+  replicas: 1
+  selector:
+    matchLabels:                        # selctor will connect all together with this key, value name
+      app: postgresdb
+  template:                             # template has its own metadata and spec section
+    metadata:                           # and it all apply to a Pod
+      labels:
+        app: postgresdb                      # specify a label in form of key, value pair
+    spec:                               # 2) specification or blueprint for pod (containers)
+      containers:
+      - name: postgresdb
+        image: postgres:alpine                    # Docker hub image
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD                
+          value: "admin"
+        - name: POSTGRES_DB                           # 'car' Table create if doesnt exist 
+          value: "car"
+---
+# Service of MongoDB
+apiVersion: v1
+kind: Service                        # what kind of configuration
+metadata:
+  name: postgresdb-service                
+spec:                                   
+  selector:
+      app: postgresdb                    # this schould be the same like label from deployment and pod
+  type: LoadBalancer
+  ports:                            
+    - protocol: TCP  
+      port: 5432
+      targetPort: 5432              # this port should match with the port of deployment
+      nodePort: 30432

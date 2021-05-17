@@ -1,0 +1,46 @@
+# DEPLOYMENT OF MONGO-DB
+apiVersion: apps/v1
+kind: Deployment                        # what kind of configuration
+metadata:
+  name: mongodb-deployment                # 1) metadata name of the deployment
+  labels:
+    app: mongodb
+spec:                                   # 2) specification for deployment
+  replicas: 1
+  selector:
+    matchLabels:                        # selctor will connect all together with this key, value name
+      app: mongodb
+  template:                             # template has its own metadata and spec section
+    metadata:                           # and it all apply to a Pod
+      labels:
+        app: mongodb                      # specify a label in form of key, value pair
+    spec:                               # 2) specification or blueprint for pod (containers)
+      containers:
+      - name: mongodb
+        image: mongo                    # Docker hub image
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:                                                # Secret should be apply first to reference on this username value
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-username
+        - name: MONGO_INITDB_ROOT_PASSWORD                
+          valueFrom:                                                # Reference to password value from mongo-secret.yaml file
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-password
+---
+# Service of MongoDB
+apiVersion: v1
+kind: Service                        # what kind of configuration
+metadata:
+  name: mongodb-service                
+spec:                                   
+  selector:
+      app: mongodb                    # this schould be the same like label from deployment and pod
+  ports:                            
+    - protocol: TCP  
+      port: 27017
+      targetPort: 27017              # this port should match with the port of deployment
