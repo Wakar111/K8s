@@ -1,0 +1,38 @@
+# Deployment for Kafka Producer Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer-deployment
+  labels: 
+    app: producer-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:                        
+      app: producer-server  
+  template:
+    metadata:
+      labels:
+        app: producer-server
+    spec:
+      containers:
+      - name: car-producer-container
+        image: wakar786/app-server-producer
+        ports: 
+        - containerPort: 8080
+
+---
+# Service for Kafka Producer Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: producer-service
+spec:
+  selector:
+      app: producer-server
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30000

@@ -36,9 +36,9 @@ metadata:
 spec:                                   
   selector:
       app: postgresdb                    # this schould be the same like label from deployment and pod
-  type: LoadBalancer
+  type: LoadBalancer                # make service to the ouside
   ports:                            
     - protocol: TCP  
       port: 5432
       targetPort: 5432              # this port should match with the port of deployment
-      nodePort: 30432
+      nodePort: 30432               # outside port for postDB

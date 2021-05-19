@@ -1,0 +1,38 @@
+# Deployment for Kafka Consumer 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-deployment
+  labels: 
+    app: consumer-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:                        
+      app: consumer-app 
+  template:
+    metadata:
+      labels:
+        app: consumer-app
+    spec:
+      containers:
+      - name: consumer-app-container
+        image: wakar786/app-consumer
+        ports: 
+        - containerPort: 8085
+
+---
+# Service for Kafka Consumer
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-service
+spec:
+  selector:
+      app: consumer-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: 8085
+      nodePort: 30100
